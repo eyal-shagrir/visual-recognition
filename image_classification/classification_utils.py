@@ -28,34 +28,35 @@ def show_parameter_success_rates(param_name, param_choices, success_rates, title
     plt.show()
 
 
-def cross_validate(classifier, training_set, training_labels, num_folds=5, show_graphs=True, **params):
+def cross_validate(classifier, training_set, training_labels, folds_num, fold_size, param_name, choices):
+    crossed_results = np.zeros((len(choices), folds_num))
+    for choice_num, param_value in enumerate(choices):
+        for i in range(folds_num):
+            (training_folds, training_folds_labels,
+             validation_fold, validation_fold_labels) = divide_to_folds(training_set, training_labels, fold_size, i)
+            classifier.train(training_folds, training_folds_labels)
+            result_labels = classifier.predict(validation_fold, **{param_name: param_value})
+            success_rate = get_success_rate(result_labels, validation_fold_labels)
+            crossed_results[choice_num, i] = success_rate
+    return crossed_results
+
+
+def cross_validate_params(classifier, training_set, training_labels, folds_num=5, show_graphs=True, **params):
     best_params = {}
     training_size = training_set.shape[0]
-    fold_size = int(training_size / num_folds)
+    fold_size = int(training_size / folds_num)
 
     for param_name, choices in params.items():
-
-        success_results = np.zeros((len(choices), num_folds))
-
-        for choice_num, param in enumerate(choices):
-
-            for i in range(num_folds):
-                (training_folds, training_folds_labels,
-                 validation_fold, validation_fold_labels) = divide_to_folds(training_set, training_labels, fold_size, i)
-
-                classifier.train(training_folds, training_folds_labels)
-
-                result_labels = classifier.predict(validation_fold, **{param_name: param})
-                success_rate = get_success_rate(result_labels, validation_fold_labels)
-                success_results[choice_num, i] = success_rate
-
-        averaged_success_rates = np.average(success_results, axis=1)
+        crossed_results = cross_validate(classifier, training_set, training_labels,
+                                         folds_num, fold_size,
+                                         param_name, choices)
+        averaged_success_rates = np.average(crossed_results, axis=1)
         if show_graphs:
             show_parameter_success_rates(param_name, choices, averaged_success_rates,
                                          title=f'cross-validation of parameter {param_name}')
-        max_idx = int(np.argmax(averaged_success_rates))
-        max_param = choices[max_idx]
-        best_params[param_name] = max_param
+        best_idx = int(np.argmax(averaged_success_rates))
+        best_param_choice = choices[best_idx]
+        best_params[param_name] = best_param_choice
 
     return best_params
 
