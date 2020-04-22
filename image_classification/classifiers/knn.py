@@ -6,20 +6,20 @@ class KNN(Classifier):
 
     def __init__(self):
         super().__init__()
+        self.training_set = None
+        self.training_labels = None
 
     def train(self, training_set, training_labels):
         self.training_set = training_set
         self.training_labels = training_labels
 
     def predict(self, testing_set, k=1, num_loops=0):
-        if num_loops == 0:
-            dists = self.compute_distances_no_loops(testing_set)
+        if num_loops == 2:
+            dists = self.compute_distances_two_loops(testing_set)
         elif num_loops == 1:
             dists = self.compute_distances_one_loop(testing_set)
-        elif num_loops == 2:
-            dists = self.compute_distances_two_loops(testing_set)
         else:
-            return
+            dists = self.compute_distances_no_loops(testing_set)
 
         return self.predict_labels(dists, k=k)
 

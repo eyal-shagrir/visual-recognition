@@ -25,3 +25,14 @@ def get_data(data_folder):
     training_images = np.vstack(training_batches)
     training_labels = np.concatenate(training_labels_batches)
     return training_images, training_labels, testing_images, testing_labels
+
+
+def subsample_data(training_images, training_labels, testing_images, testing_labels, training_num=5000,
+                   testing_num=500):
+    """
+    the data is sampled using masks since by integer indexing we get a deep copy of the data sets
+    """
+    training_mask = range(training_num)
+    testing_mask = range(testing_num)
+    return (training_images[training_mask], training_labels[training_mask],
+            testing_images[testing_mask], testing_labels[testing_mask])
