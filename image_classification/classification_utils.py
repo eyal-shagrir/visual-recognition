@@ -61,12 +61,33 @@ def cross_validate_params(classifier, training_set, training_labels, folds_num=5
     return best_params
 
 
+def predict_success_rate(classifier, training_set, training_labels, testing_set, testing_labels, **params):
+    classifier.train(training_set, training_labels)
+    result_labels = classifier.predict(testing_set, **params)
+    success_rate = get_success_rate(result_labels, testing_labels)
+    print(f'for {type(classifier).__name__} with params {params}, success rate is: {success_rate}')
+
+
+def cross_validate_and_predict(classifier,
+                               training_set, training_labels, testing_set, testing_labels,
+                               folds_num=5, show_graphs=True,
+                               **params):
+    if params:
+        best_params = cross_validate_params(classifier,
+                                            training_set, training_labels,
+                                            folds_num=folds_num, show_graphs=show_graphs,
+                                            **params)
+    else:
+        best_params = params
+    predict_success_rate(classifier, training_set, training_labels, testing_set, testing_labels, **best_params)
+
+
 # deprecated
 def show_success_rate_by_k(classifier, testing_set, testing_labels, k_limit=21):
     classifier_name = type(classifier).__name__
     success_rates = []
     for k in range(1, k_limit):
-        result_labels = classifier.predict(testing_set, k=k)
+        result_labels = classifier.predict_success_rate(testing_set, k=k)
         success_rate = get_success_rate(result_labels, testing_labels)
         success_rates.append(success_rate)
 
