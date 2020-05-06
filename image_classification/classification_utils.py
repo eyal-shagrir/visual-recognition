@@ -34,8 +34,8 @@ def cross_validate(classifier, training_set, training_labels, folds_num, fold_si
         for i in range(folds_num):
             (training_folds, training_folds_labels,
              validation_fold, validation_fold_labels) = divide_to_folds(training_set, training_labels, fold_size, i)
-            classifier.train(training_folds, training_folds_labels)
-            result_labels = classifier.predict(validation_fold, **{param_name: param_value})
+            model = classifier.train(training_folds, training_folds_labels, **{param_name: param_value})
+            result_labels = classifier.predict(validation_fold, **model)
             success_rate = get_success_rate(result_labels, validation_fold_labels)
             crossed_results[choice_num, i] = success_rate
     return crossed_results

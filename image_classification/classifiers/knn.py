@@ -8,12 +8,18 @@ class KNN(Classifier):
         super().__init__()
         self.training_set = None
         self.training_labels = None
+        self.k = None
+        self.num_loops = None
 
-    def train(self, training_set, training_labels):
+    def train(self, training_set, training_labels, k=1, num_loops=0):
         self.training_set = training_set
         self.training_labels = training_labels
+        self.k = k
+        self.num_loops = num_loops
+        return {}
 
-    def predict(self, testing_set, k=1, num_loops=0):
+    def predict(self, testing_set, **model):
+        num_loops = self.num_loops
         if num_loops == 2:
             dists = self.compute_distances_two_loops(testing_set)
         elif num_loops == 1:
@@ -21,7 +27,7 @@ class KNN(Classifier):
         else:
             dists = self.compute_distances_no_loops(testing_set)
 
-        return self.predict_labels(dists, k=k)
+        return self.predict_labels(dists)
 
     def compute_distances_two_loops(self, testing_set):
         num_test = testing_set.shape[0]
@@ -51,7 +57,9 @@ class KNN(Classifier):
         dists += training_square_sums.reshape(1, training_square_sums.shape[0])
         return dists
 
-    def predict_labels(self, dists, k=1):
+    def predict_labels(self, dists):
+        k = self.k
+
         # sort distances and get indices in accordance
         sorted_dists_indices = np.argsort(dists, axis=1)
 
