@@ -60,9 +60,14 @@ def subsample_data(training_images, training_labels, testing_images, testing_lab
             testing_images[testing_mask], testing_labels[testing_mask])
 
 
-def normalize_data(data):
-    mean = np.mean(data)
-    return data - mean
+def normalize_data(training_set, testing_set):
+    """
+    gets a matrix of images in size num_images * 3072
+    and returns it minus the mean image
+    """
+    mean = np.mean(training_set, axis=0)
+    training_set -= mean
+    testing_set -= mean
 
 
 def show_image(image):
