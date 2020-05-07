@@ -24,10 +24,10 @@ def main():
     (training_set, training_labels,
      testing_set, testing_labels) = subsample_data(training_images, training_labels,
                                                    testing_images, testing_labels,
-                                                   training_num=50, testing_num=5)
+                                                   training_num=5000, testing_num=500)
     normalize_data(training_set, testing_set)
 
-    for classifier_name, classifier_cls in {'KNN': KNN, 'SVM': SVM}:
+    for classifier_name, classifier_cls in {'KNN': KNN, 'SVM': SVM}.items():
         classifier = classifier_cls()
         cross_validate_and_predict(classifier,
                                    training_set, training_labels,
