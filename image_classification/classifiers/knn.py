@@ -18,7 +18,7 @@ class KNN(Classifier):
         self.num_loops = num_loops
         return {}
 
-    def predict(self, testing_set, **model):
+    def predict(self, testing_set):
         num_loops = self.num_loops
         if num_loops == 2:
             dists = self.compute_distances_two_loops(testing_set)

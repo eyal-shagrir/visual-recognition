@@ -17,6 +17,29 @@ def time_function(f, *args):
     return toc - tic
 
 
+def compute_loss(X, y, W, reg):
+    n = X.shape[0]
+    scores = W @ X.T
+    scores_of_right_labels = scores[y, np.arange(n)]
+    margins = np.maximum(scores - scores_of_right_labels + DELTA, 0)
+    margins[y, np.arange(n)] = 0
+    losses = np.sum(margins, axis=0)
+    general_loss = np.average(losses) + 0.5 * reg * np.linalg.norm(W)
+    return margins, general_loss
+
+
+def compute_loss_gradient(X, y, W, margins, reg):
+    n = X.shape[0]
+    indicators = margins
+    losses_indices = np.nonzero(margins)
+    indicators[losses_indices] = 1
+    losses_sum = np.sum(indicators, axis=0)
+    indicators[y, np.arange(n)] = -losses_sum
+    gradient = (indicators @ X) / n
+    gradient += reg * W
+    return gradient
+
+
 class SVM(Classifier):
 
     def __init__(self):
@@ -24,33 +47,35 @@ class SVM(Classifier):
         self.training_set = None
         self.training_labels = None
 
-    def train(self, training_set, training_labels, alpha=1e-3, reg=1e-5, iterations=100):
+    def get_batched_data(self, iteration, batch_num, batch_size):
+        low_idx = iteration % batch_num
+        high_idx = (iteration + 1) % batch_num
+        if high_idx == 0:
+            high_idx = batch_num
+        low_bar = low_idx * batch_size
+        high_bar = high_idx * batch_size
+        images_batch = self.training_set[low_bar: high_bar, :]
+        X = np.hstack((images_batch, np.ones((batch_size, 1))))
+        y = self.training_labels[low_bar: high_bar]
+        return X, y
+
+    def train(self, training_set, training_labels, alpha=1e-5, reg=5000, iterations=200, batch_num=1):
         self.training_set = training_set
         self.training_labels = training_labels
 
-        n = training_set.shape[0]
         weights = np.zeros((CLASSES_NUM, IMAGE_SIZE))
         bias = np.ones((CLASSES_NUM, 1))
 
         W = np.hstack((weights, bias))
-        X = np.hstack((training_set, np.ones((n, 1))))
-        y = training_labels
 
-        for iteration in range(iterations):
-            scores = W @ X.T
-            scores_of_right_labels = scores[y, np.arange(n)]
-            margins = np.maximum(scores - scores_of_right_labels + DELTA, 0)
-            margins[y, np.arange(n)] = 0
-            losses = np.sum(margins, axis=0)
-            general_loss = np.average(losses) + 0.5 * reg * np.linalg.norm(W)
+        images_num = training_set.shape[0]
+        batch_size = int(images_num / batch_num)
 
-            indicators = margins
-            losses_indices = np.nonzero(margins)
-            indicators[losses_indices] = 1
-            losses_sum = np.sum(indicators, axis=0)
-            indicators[y, np.arange(n)] = -losses_sum
-            gradient = (indicators @ X) / n
-            gradient += reg * W
+        for i in range(iterations):
+            X, y = self.get_batched_data(i, batch_num, batch_size)
+
+            margins, general_loss = compute_loss(X, y, W, reg)
+            gradient = compute_loss_gradient(X, y, W, margins, reg)
 
             W -= alpha * gradient
 

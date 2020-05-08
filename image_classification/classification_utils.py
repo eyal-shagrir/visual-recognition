@@ -46,7 +46,6 @@ def cross_validate_params(classifier, training_set, training_labels, folds_num=5
     best_params = {}
     training_size = training_set.shape[0]
     fold_size = int(training_size / folds_num)
-
     for param_name, choices in params.items():
         if len(choices) > 1:
             crossed_results = cross_validate(classifier, training_set, training_labels,
@@ -62,7 +61,7 @@ def cross_validate_params(classifier, training_set, training_labels, folds_num=5
             best_idx = 0
         best_param_choice = choices[best_idx]
         best_params[param_name] = best_param_choice
-        print(f'best - {param_name} = {best_param_choice}')
+        # print(f'best - {param_name} = {best_param_choice}')
     return best_params
 
 
