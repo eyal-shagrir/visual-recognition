@@ -13,4 +13,7 @@ So far, this project contains the following features:
 
   1. **K-Nearest-Neighbor classifier** which uses the l2 norm to compute distances
   
-  2. **Cross-Validation** tool for testing classification hyperparameters
+  2. **Linear SVM classifier** with stochastic gradient descent 
+  
+  3. **Cross-Validation** tool for testing classification hyperparameters
+  
